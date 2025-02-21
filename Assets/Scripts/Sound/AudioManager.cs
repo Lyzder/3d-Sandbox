@@ -6,10 +6,18 @@ using UnityEngine.Audio;
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
+
     [SerializeField] AudioSource sfxAudio, musicAudio;
     [SerializeField] AudioMixer bgmMixer, sfxMixer;
     [SerializeField] SampleAccurateLoop sampleLoop;
+
     public AudioClip InitialMusic;
+    public bool isMuteBgm;
+    public bool isMuteSfx;
+    public string musicSavedValue = "musicValue";
+    public string sfxSavedValue = "sfxValue";
+    public string musicIsMuted = "musicMuted";
+    public string sfxIsMuted = "sfxMuted";
 
     private void Awake()
     {
@@ -22,15 +30,17 @@ public class AudioManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
+
+        musicAudio = transform.GetChild(0).GetComponent<AudioSource>();
+        sampleLoop = GetComponentInChildren<SampleAccurateLoop>();
+        sfxAudio = transform.GetChild(1).GetComponent<AudioSource>();
+        isMuteBgm = false;
+        isMuteSfx = false;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        musicAudio = transform.GetChild(0).GetComponent<AudioSource>();
-        sampleLoop = GetComponentInChildren<SampleAccurateLoop>();
-        sfxAudio = transform.GetChild(1).GetComponent<AudioSource>();
-
         
     }
 
@@ -91,6 +101,77 @@ public class AudioManager : MonoBehaviour
         float dB = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
 
         sfxMixer.SetFloat("Volume_Master", dB);
+    }
+
+    public void ToggleMuteMusic()
+    {
+        float currentVolume;
+
+        if (!isMuteBgm)
+        {
+            bgmMixer.GetFloat("Volume_Master", out currentVolume);
+            SetMusicVolume(0);
+            PlayerPrefs.SetFloat(musicSavedValue, currentVolume);
+            PlayerPrefs.SetInt(musicIsMuted, 1);
+        }
+        else
+        {
+            PlayerPrefs.SetInt(musicIsMuted, 0);
+            SetMusicVolume(PlayerPrefs.GetFloat(musicSavedValue));
+        }
+
+        isMuteBgm = !isMuteBgm;
+    }
+
+    public void ToggleMuteSfx()
+    {
+        float currentVolume;
+
+        if (!isMuteSfx)
+        {
+            sfxMixer.GetFloat("Volume_Master", out currentVolume);
+            SetSfxVolume(0);
+            PlayerPrefs.SetFloat(sfxSavedValue, currentVolume);
+            PlayerPrefs.SetInt(sfxIsMuted, 1);
+        }
+        else
+        {
+            PlayerPrefs.SetInt(sfxIsMuted, 0);
+            SetMusicVolume(PlayerPrefs.GetFloat(sfxSavedValue));
+        }
+
+        isMuteSfx = !isMuteSfx;
+    }
+
+    public void SaveSoundPreferences(float levelMusic, float levelSFX)
+    {
+        PlayerPrefs.SetFloat(musicSavedValue, levelMusic);
+        PlayerPrefs.SetFloat(sfxSavedValue, levelSFX);
+        if (isMuteBgm)
+            PlayerPrefs.SetInt(musicIsMuted, 1);
+        else
+            PlayerPrefs.SetInt(musicIsMuted, 0);
+        if (isMuteSfx)
+            PlayerPrefs.SetInt(sfxIsMuted, 1);
+        else
+            PlayerPrefs.SetInt(sfxIsMuted, 0);
+    }
+
+    public void LoadSoundPreferences()
+    {
+        if (PlayerPrefs.HasKey(musicSavedValue))
+        {
+            SetMusicVolume(PlayerPrefs.GetFloat(musicSavedValue));
+            SetSfxVolume(PlayerPrefs.GetFloat(sfxSavedValue));
+            if (PlayerPrefs.GetInt(musicIsMuted) == 1)
+                isMuteBgm = true;
+            else
+                isMuteBgm = false;
+            if (PlayerPrefs.GetInt(sfxIsMuted) == 1)
+                isMuteSfx = true;
+            else
+                isMuteSfx = false;
+        }
     }
 
     IEnumerator PlayWhenReady(AudioSource audioSource)

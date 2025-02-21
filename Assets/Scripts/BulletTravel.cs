@@ -5,6 +5,7 @@ public class BulletTravel : MonoBehaviour
     public float bulletSpeed;
     public float aliveTime;
     public GameObject impactEffect;
+    public float rotateSpeed;
 
     // Start is called before the first frame update
     void Start()
@@ -15,19 +16,14 @@ public class BulletTravel : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        aliveTime -= Time.deltaTime;
-        if (aliveTime > 0)
-        {
-            transform.Translate(Vector3.forward * bulletSpeed * Time.deltaTime);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        MoveBullet();
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("Player") || other.CompareTag("Bullet"))
+            return;
+
         Vector3 hitPoint = transform.position; // Default to bullet position
 
         // Perform a raycast backward to find the exact impact point
@@ -48,5 +44,18 @@ public class BulletTravel : MonoBehaviour
 
         // Bullet is always destroyed upon impact
         Destroy(gameObject);
+    }
+
+    private void MoveBullet()
+    {
+        aliveTime -= Time.deltaTime;
+        if (aliveTime > 0)
+        {
+            transform.Translate(Vector3.forward * bulletSpeed * Time.deltaTime);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

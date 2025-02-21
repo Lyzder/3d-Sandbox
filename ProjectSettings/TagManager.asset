@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Bullet
   - Target
+  - BulletSpawn
+  - CameraPivot
+  - Enemy
+  - Hud
   layers:
   - Default
   - TransparentFX
