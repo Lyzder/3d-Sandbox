@@ -11,13 +11,14 @@ public class AudioManager : MonoBehaviour
     [SerializeField] AudioMixer bgmMixer, sfxMixer;
     [SerializeField] SampleAccurateLoop sampleLoop;
 
-    public AudioClip InitialMusic;
     public bool isMuteBgm;
     public bool isMuteSfx;
     public string musicSavedValue = "musicValue";
     public string sfxSavedValue = "sfxValue";
     public string musicIsMuted = "musicMuted";
     public string sfxIsMuted = "sfxMuted";
+
+    private BgmMetadata bgmMetadata;
 
     private void Awake()
     {
@@ -47,7 +48,7 @@ public class AudioManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     /// <summary>
@@ -65,7 +66,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="clip"></param>
     public void PlayMusic(AudioClip clip)
     {
-        musicAudio.Stop();
+        StopMusic();
         musicAudio.clip = clip;
         musicAudio.Play();
         musicAudio.loop = true;
@@ -80,7 +81,7 @@ public class AudioManager : MonoBehaviour
     /// <param name="loopEnd"></param>
     public void PlayMusic(AudioClip clip, int loopStart, int loopEnd)
     {
-        musicAudio.Stop();
+        StopMusic();
 
         sampleLoop.loopStartSample = loopStart;
         sampleLoop.loopEndSample = loopEnd;
@@ -89,6 +90,35 @@ public class AudioManager : MonoBehaviour
         StartCoroutine(PlayWhenReady(musicAudio));
     }
 
+    public void StopMusic()
+    {
+        sampleLoop.SetPlaying(false);
+        musicAudio.loop = false;
+        musicAudio.Stop();
+        musicAudio.time = 0;
+    }
+
+    public void PlaySceneBgm()
+    {
+        int[] loop;
+        try
+        {
+            bgmMetadata = FindAnyObjectByType<BgmMetadata>();
+            loop = bgmMetadata.GetLoopSamples();
+            musicAudio.volume = bgmMetadata.GetVolume();
+            sampleLoop.fileSampleRate = bgmMetadata.GetSampleRate();
+            PlayMusic(bgmMetadata.GetBgmClip(), loop[0], loop[1]);
+        }
+        catch
+        {
+            Debug.Log("Could not load prepared music");
+        }
+    }
+
+    /// <summary>
+    /// Sets the volume of the BGM mixer using a 0.0 to 1.0 logarithmic scale
+    /// </summary>
+    /// <param name="volume">Volume in a logarithmic scale</param>
     public void SetMusicVolume(float volume)
     {
         float dB = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
@@ -96,6 +126,19 @@ public class AudioManager : MonoBehaviour
         bgmMixer.SetFloat("Volume_Master", dB);
     }
 
+    /// <summary>
+    /// Sets the volume of the BGM mixer
+    /// </summary>
+    /// <param name="volume">Volume in decibels</param>
+    public void SetMusicVolume(int volume)
+    {
+        bgmMixer.SetFloat("Volume_Master", volume);
+    }
+
+    /// <summary>
+    /// Sets the volume of the SFX mixer using a 0.0 to 1.0 logarithmic scale
+    /// </summary>
+    /// <param name="volume">Volume in a logarithmic scale</param>
     public void SetSfxVolume(float volume)
     {
         float dB = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
@@ -103,15 +146,22 @@ public class AudioManager : MonoBehaviour
         sfxMixer.SetFloat("Volume_Master", dB);
     }
 
-    public void ToggleMuteMusic()
+    /// <summary>
+    /// Sets the volume of the SFX mixer
+    /// </summary>
+    /// <param name="volume">Volume in decibels</param>
+    public void SetSfxVolume(int volume)
     {
-        float currentVolume;
+        sfxMixer.SetFloat("Volume_Master",volume);
+    }
+
+    public void ToggleMuteMusic(float sliderValue)
+    {
 
         if (!isMuteBgm)
         {
-            bgmMixer.GetFloat("Volume_Master", out currentVolume);
-            SetMusicVolume(0);
-            PlayerPrefs.SetFloat(musicSavedValue, currentVolume);
+            SetMusicVolume(0f);
+            PlayerPrefs.SetFloat(musicSavedValue, sliderValue);
             PlayerPrefs.SetInt(musicIsMuted, 1);
         }
         else
@@ -119,19 +169,16 @@ public class AudioManager : MonoBehaviour
             PlayerPrefs.SetInt(musicIsMuted, 0);
             SetMusicVolume(PlayerPrefs.GetFloat(musicSavedValue));
         }
-
         isMuteBgm = !isMuteBgm;
     }
 
-    public void ToggleMuteSfx()
+    public void ToggleMuteSfx(float sliderValue)
     {
-        float currentVolume;
 
         if (!isMuteSfx)
         {
-            sfxMixer.GetFloat("Volume_Master", out currentVolume);
-            SetSfxVolume(0);
-            PlayerPrefs.SetFloat(sfxSavedValue, currentVolume);
+            SetSfxVolume(0f);
+            PlayerPrefs.SetFloat(sfxSavedValue, sliderValue);
             PlayerPrefs.SetInt(sfxIsMuted, 1);
         }
         else
@@ -139,7 +186,6 @@ public class AudioManager : MonoBehaviour
             PlayerPrefs.SetInt(sfxIsMuted, 0);
             SetMusicVolume(PlayerPrefs.GetFloat(sfxSavedValue));
         }
-
         isMuteSfx = !isMuteSfx;
     }
 
@@ -181,7 +227,8 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
         sampleLoop.PrepareClip();
+        sampleLoop.ResetPosition();
+        sampleLoop.SetPlaying(true);
         audioSource.Play();
-        musicAudio.loop = true;
     }
 }

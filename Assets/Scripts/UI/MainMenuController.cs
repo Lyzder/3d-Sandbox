@@ -26,8 +26,9 @@ public class UIController : MonoBehaviour
     // Corrutina que maneja la transición de salida antes de empezar el juego
     IEnumerator ToGameTransition()
     {
+        AudioManager.Instance.StopMusic();
         //transitionAnimator.SetBool("toOut", true); // Activa la animación de transición de salida
-        yield return new WaitForSeconds(3.5f); // Espera el tiempo que dura la animación
+        yield return new WaitForSeconds(0.5f); // Espera el tiempo que dura la animación
         SceneManager.LoadScene("TestingGrounds"); // Comienza el juego
         this.gameObject.SetActive(false); // Desactiva este objeto (probablemente el menú principal)
     }
@@ -36,27 +37,47 @@ public class UIController : MonoBehaviour
     public void ChangeMusicVolume()
     {
         AudioManager.Instance.SetMusicVolume(musicSlider.value);
+        if (musicSlider.value > 0)
+            muteBmgChecker.isOn = false;
+        else
+            muteBmgChecker.isOn = true;
+        UpdateIcons();
     }
 
     // Método para cambiar el volumen de los efectos de sonido basado en el valor del slider
     public void ChangeSFXVolume()
     {
         AudioManager.Instance.SetSfxVolume(sfxSlider.value);
+        if (sfxSlider.value > 0)
+            muteSfxChecker.isOn = false;
+        else
+            muteSfxChecker.isOn = true;
+        UpdateIcons();
     }
 
     // Método para alternar entre activar y desactivar el silencio
     public void MuteBGM()
     {
-        AudioManager.Instance.ToggleMuteMusic();
-        if (muteBmgChecker.isOn)
-            muteBmgChecker.GetComponent<Image>().sprite = mutedSprite;
-        else
-            muteBmgChecker.GetComponent<Image>().sprite = unmutedSprite;
+        if (musicSlider.value == 0)
+            return;
+        AudioManager.Instance.ToggleMuteMusic(musicSlider.value);
+        UpdateIcons();
     }
 
     public void MuteSFX()
     {
-        AudioManager.Instance.ToggleMuteSfx();
+        if (sfxSlider.value == 0)
+            return;
+        AudioManager.Instance.ToggleMuteSfx(sfxSlider.value);
+        UpdateIcons();
+    }
+
+    private void UpdateIcons()
+    {
+        if (muteBmgChecker.isOn)
+            muteBmgChecker.GetComponent<Image>().sprite = mutedSprite;
+        else
+            muteBmgChecker.GetComponent<Image>().sprite = unmutedSprite;
         if (muteSfxChecker.isOn)
             muteSfxChecker.GetComponent<Image>().sprite = mutedSprite;
         else
@@ -81,18 +102,7 @@ public class UIController : MonoBehaviour
 
     public void ShowMenu(int index)
     {
-        switch (index)
-        {
-            case 0:
-                transitionAnimator.SetInteger("menuIndex", 0);
-                break;
-            case 1:
-                transitionAnimator.SetInteger("menuIndex", 1);
-                break;
-            default:
-                transitionAnimator.SetInteger("menuIndex", 0);
-                break;
-        }
+        transitionAnimator.SetInteger("menuIndex", index);
     }
 
 }

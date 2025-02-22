@@ -36,12 +36,18 @@ public class PlayerController : MonoBehaviour
     [Header("Shooting Settings")]
     [SerializeField] GameObject bullet;
     [SerializeField] float ammoCharge;
+    [SerializeField] float ammoBuffDuration;
     public int rechargeRate;
     private GameObject bulletSpawn;
     private Vector3 spawnPosition;
     private Vector2 valueClamp;
     private bool isAiming;
+    private bool isAmmoBuff;
+    private float buffTimer;
+    private bool endBuffClipPlayed;
     public AudioClip shootSfx;
+    public AudioClip ammoBuffStartSfx;
+    public AudioClip ammoBuffEndSfx;
 
     // Input
     private CharacterController characterController;
@@ -61,6 +67,8 @@ public class PlayerController : MonoBehaviour
 
         ammoCharge = 100f;
         valueClamp = new Vector2(0f, 100f);
+        isAiming = false;
+        isAmmoBuff = false;
 
         bulletSpawn = FindChildWithTag.FindInChildrenBFS(transform, "BulletSpawn");
     }
@@ -102,7 +110,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         cameraController = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraController>();
-        isAiming = false;
+        buffTimer = 0;
     }
 
     private void Update()
@@ -110,6 +118,8 @@ public class PlayerController : MonoBehaviour
         cameraController.SetLookInput(lookInput);
         lookInput = Vector2.zero;
         RechargeAmmo();
+        if (isAmmoBuff)
+            BuffCountdown();
     }
 
     private void FixedUpdate()
@@ -257,9 +267,9 @@ public class PlayerController : MonoBehaviour
 
     private void Shoot()
     {
-        if (ammoCharge < 20f)
+        if (ammoCharge < 20f && !isAmmoBuff)
             return;
-        ammoCharge -= 20f;
+        ammoCharge -= isAmmoBuff ? 0 : 20;
         spawnPosition = bulletSpawn.transform.position;
         Instantiate(bullet, spawnPosition, Quaternion.LookRotation(cameraTransform.forward));
         AudioManager.Instance.PlaySFX(shootSfx);
@@ -273,6 +283,32 @@ public class PlayerController : MonoBehaviour
     public float GetAmmo()
     {
         return ammoCharge;
+    }
+
+    public bool GetIsBuff()
+    {
+        return isAmmoBuff;
+    }
+
+    public void SetBuff()
+    {
+        isAmmoBuff = true;
+        AudioManager.Instance.PlaySFX(ammoBuffStartSfx);
+        endBuffClipPlayed = false;
+    }
+
+    private void BuffCountdown()
+    {
+        buffTimer += Time.deltaTime;
+        if (buffTimer >= ammoBuffDuration)
+        {
+            buffTimer = 0;
+            isAmmoBuff = false;
+        }
+        if (!endBuffClipPlayed && ammoBuffDuration - buffTimer <= ammoBuffEndSfx.length) { 
+            AudioManager.Instance.PlaySFX(ammoBuffEndSfx);
+            endBuffClipPlayed = true;
+        }
     }
 
     private void OnDrawGizmos()

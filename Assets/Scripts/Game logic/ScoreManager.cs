@@ -6,12 +6,19 @@ using TMPro;
 public class ScoreManager : MonoBehaviour
 {
     [SerializeField] int winningScore;
+    [SerializeField] Transform flagTransform;
     private int destroyedTargets;
+    private float flagMovement;
     private bool wonFlag, lostFlag;
 
     public static event Action OnScoring;
     public static event Action OnWinning;
     public TextMeshProUGUI scoreText;
+
+    private void Awake()
+    {
+        flagMovement = 7.5f / winningScore;
+    }
 
     private void OnEnable()
     {
@@ -45,6 +52,7 @@ public class ScoreManager : MonoBehaviour
 
         destroyedTargets++;
         OnScoring?.Invoke();
+        RaiseFlag();
         if (destroyedTargets >= winningScore)
         {
             updateScore(true);
@@ -61,5 +69,10 @@ public class ScoreManager : MonoBehaviour
             scoreText.text = "Good job!";
         else
             scoreText.text = winningScore - destroyedTargets + " remaining";
+    }
+
+    private void RaiseFlag()
+    {
+        flagTransform.localPosition += new Vector3(0, flagMovement, 0);
     }
 }

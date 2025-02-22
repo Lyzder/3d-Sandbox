@@ -12,7 +12,7 @@ public class HudManager : MonoBehaviour
     private Canvas canvas;
     private Transform player;
     private PlayerController playerController;
-    private RectTransform ammoBar;
+    private Transform ammoBar;
     private RectTransform currentAmmo;
     private RectTransform crosshair;
     private float maxBarHeight;
@@ -32,7 +32,7 @@ public class HudManager : MonoBehaviour
 
         canvas = gameObject.GetComponentInChildren<Canvas>();
         hud = FindChildWithTag.FindInChildrenBFS(transform, "Hud").GetComponent<RectTransform>();
-        ammoBar = (RectTransform)hud.GetChild(0);
+        ammoBar = hud.GetChild(0);
         crosshair = (RectTransform)hud.GetChild(1);
         if (ammoBar == null)
             Debug.Log("No bar");
@@ -58,6 +58,14 @@ public class HudManager : MonoBehaviour
 
     private void UpdateAmmoBar()
     {
+        if (playerController.GetIsBuff())
+        {
+            ammoBar.GetComponent<Image>().color = Color.yellow;
+        }
+        else
+        {
+            ammoBar.GetComponent<Image>().color = Color.white;
+        }
         currentAmmo = (RectTransform)ammoBar.GetChild(0);
         currentAmmo.sizeDelta = new Vector2(currentAmmo.sizeDelta.x, playerController.GetAmmo() * maxBarHeight / 100);
     }

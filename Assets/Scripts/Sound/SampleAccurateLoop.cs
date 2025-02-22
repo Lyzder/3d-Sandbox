@@ -4,12 +4,12 @@ using UnityEngine;
 public class SampleAccurateLoop : MonoBehaviour
 {
     [Header("Sample rates")]
-    //public int fileSampleRate = 44100;
+    public int fileSampleRate;
     public int targetSampleRate = 48000;
 
     [Header("Loop Settings")]
-    public int loopStartSample = 1290240; // Start of loop in samples
-    public int loopEndSample = 5274964;   // End of loop in samples
+    public int loopStartSample; // Start of loop in samples
+    public int loopEndSample;   // End of loop in samples
 
 
     private AudioSource audioSource;
@@ -17,19 +17,38 @@ public class SampleAccurateLoop : MonoBehaviour
     private float[] resampledAudioData;
     private int numChannels;
     private int currentSample = 0;
-    private int originalSampleRate = 0;
     private int adjustedLoopStart;
     private int adjustedLoopEnd;
+    private float volume;
+    private bool isPlaying;
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
 
-        if (audioSource.clip == null)
-        {
-            Debug.LogError("AudioSource does not have an assigned AudioClip!");
-            return;
-        }
+        isPlaying = false;
+    }
+
+    public void SetPlaying(bool playing)
+    {
+        isPlaying = playing;
+    }
+
+    public void ResetPosition()
+    {
+        currentSample = 0;
+    }
+
+    public void SetClipSource(AudioClip clip)
+    {
+        audioSource.clip = clip;
+    }
+
+    public void SetSampleInfo(int sampleRate, int loopStart, int loopEnd)
+    {
+        fileSampleRate = sampleRate;
+        loopStartSample = loopStart;
+        loopEndSample = loopEnd;
     }
 
     /// <summary>
@@ -37,22 +56,24 @@ public class SampleAccurateLoop : MonoBehaviour
     /// </summary>
     public void PrepareClip()
     {
-        originalSampleRate = audioSource.clip.frequency;
         numChannels = audioSource.clip.channels;
 
-        adjustedLoopStart = Mathf.RoundToInt(loopStartSample * ((float)targetSampleRate / originalSampleRate));
-        adjustedLoopEnd = Mathf.RoundToInt(loopEndSample * ((float)targetSampleRate / originalSampleRate));
+        adjustedLoopStart = Mathf.RoundToInt(loopStartSample * ((float)targetSampleRate / fileSampleRate));
+        adjustedLoopEnd = Mathf.RoundToInt(loopEndSample * ((float)targetSampleRate / fileSampleRate));
 
         // Load original audio data
         originalAudioData = new float[audioSource.clip.samples * numChannels];
         audioSource.clip.GetData(originalAudioData, 0);
 
         // Resample the clip to target sample rate
-        resampledAudioData = ResampleAudio(originalAudioData, originalSampleRate, targetSampleRate, numChannels);
+        resampledAudioData = ResampleAudio(originalAudioData, audioSource.clip.frequency, targetSampleRate, numChannels);
 
         // Replace the clip with resampled audio
         AudioClip resampledClip = AudioClip.Create("ResampledClip", resampledAudioData.Length / numChannels, numChannels, targetSampleRate, false);
         resampledClip.SetData(resampledAudioData, 0);
+
+        volume = audioSource.volume;
+
         audioSource.clip = resampledClip;
     }
 
@@ -77,7 +98,13 @@ public class SampleAccurateLoop : MonoBehaviour
 
     private void OnAudioFilterRead(float[] data, int channels)
     {
-        if (resampledAudioData == null || resampledAudioData.Length == 0) return;
+        if (!isPlaying || resampledAudioData == null || resampledAudioData.Length == 0)
+        {
+            // Clear buffer when stopped
+            for (int i = 0; i < data.Length; i++)
+                data[i] = 0;
+            return;
+        }
 
         int bufferSamples = data.Length / channels;
 
@@ -96,7 +123,7 @@ public class SampleAccurateLoop : MonoBehaviour
 
                 if (audioDataIndex < resampledAudioData.Length)
                 {
-                    data[i * channels + channel] = resampledAudioData[audioDataIndex];
+                    data[i * channels + channel] = resampledAudioData[audioDataIndex] * volume;
                 }
                 else
                 {

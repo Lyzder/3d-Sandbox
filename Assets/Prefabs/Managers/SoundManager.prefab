@@ -43,7 +43,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: 41d52a9d49b8550409232735c018bf1b, type: 2}
-  m_audioClip: {fileID: 8300000, guid: bcc86c5f481789b44a56be6e89c0d269, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -141,9 +141,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3051b3f03c01354fb73b4da84ba9f49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fileSampleRate: 48000
   targetSampleRate: 48000
-  loopStartSample: 1290240
-  loopEndSample: 5274964
+  loopStartSample: 0
+  loopEndSample: 0
 --- !u!1 &1174920118201919357
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,7 +196,12 @@ MonoBehaviour:
   bgmMixer: {fileID: 24100000, guid: 41d52a9d49b8550409232735c018bf1b, type: 2}
   sfxMixer: {fileID: 24100000, guid: 4f9d8e3e9eebf224598c685957d42f69, type: 2}
   sampleLoop: {fileID: 0}
-  InitialMusic: {fileID: 8300000, guid: bcc86c5f481789b44a56be6e89c0d269, type: 3}
+  isMuteBgm: 0
+  isMuteSfx: 0
+  musicSavedValue: musicValue
+  sfxSavedValue: sfxValue
+  musicIsMuted: musicMuted
+  sfxIsMuted: sfxMuted
 --- !u!1 &2280737393998656884
 GameObject:
   m_ObjectHideFlags: 0

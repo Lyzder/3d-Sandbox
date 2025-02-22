@@ -1233,7 +1233,7 @@ PrefabInstance:
       addedObject: {fileID: 6947214544364022273}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49a93e7e6fd925943bc32f1e100908a5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8849921572321660004}
+      addedObject: {fileID: 7520333814965786708}
   m_SourcePrefab: {fileID: 100100000, guid: 49a93e7e6fd925943bc32f1e100908a5, type: 3}
 --- !u!4 &3881820926138993129 stripped
 Transform:
@@ -1322,8 +1322,11 @@ MonoBehaviour:
   cameraController: {fileID: 0}
   bullet: {fileID: 1001630502518402998, guid: 5f3dd4d06b025c94eb40e0aa48fdf5d4, type: 3}
   ammoCharge: 100
+  ammoBuffDuration: 10
   rechargeRate: 25
   shootSfx: {fileID: 8300000, guid: 87733bda4eb8d7248aba1a7d419e1d21, type: 3}
+  ammoBuffStartSfx: {fileID: 8300000, guid: 1c9009759279c1249a1c63441e5145de, type: 3}
+  ammoBuffEndSfx: {fileID: 8300000, guid: e8764f1ee0fcc084f852bf98a86eddf5, type: 3}
 --- !u!114 &6947214544364022273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1458,29 +1461,33 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!136 &8849921572321660004
-CapsuleCollider:
+--- !u!54 &7520333814965786708
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4509562538010153811}
-  m_Material: {fileID: 0}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Radius: 0.4
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 1
 --- !u!4 &7510556039599172655 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -2707054796494011859, guid: 49a93e7e6fd925943bc32f1e100908a5, type: 3}

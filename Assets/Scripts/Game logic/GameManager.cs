@@ -68,8 +68,6 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayer();
         targetSpawner.canSpanw = true;
-        //AudioManager.Instance.SetMusicVolume(0.18f);
-        AudioManager.Instance.PlayMusic(AudioManager.Instance.InitialMusic, 1290240, 5274964);
         gameStarted = true;
         wonFlag = false;
         lostFlag = false;
@@ -99,7 +97,7 @@ public class GameManager : MonoBehaviour
         try
         {
             spawnPoint = GameObject.FindGameObjectWithTag("Respawn").transform;
-            Instantiate(playerPrefab, spawnPoint);
+            Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
         }
         catch {
             Instantiate(playerPrefab, new Vector3(0, 0, 0), new Quaternion());
@@ -109,6 +107,7 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        AudioManager.Instance.PlaySceneBgm();
         if (scene.name == "TestingGrounds")
             StartGame();
     }

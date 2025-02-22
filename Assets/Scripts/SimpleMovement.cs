@@ -1,30 +1,43 @@
 using UnityEngine;
+using System.Collections;
 
 public class SimpleMovement : MonoBehaviour
 {
-    public Vector3 moveDirection = new Vector3(0f, 0f, 1f);  // Direction to move (right on the x-axis)
-    public float moveSpeed = 0.1f;  // Speed of movement per frame
-    private int i;
-    private int dir;
-    // Start is called before the first frame update
+    [Header("Movement Settings")]
+    public float moveHeight;     // Vertical movement distance
+    public float moveDistance;   // Horizontal movement distance
+    public float speed;          // Movement speed
+    public float waitTime;       // Wait time at each position
+
+    private Vector3 startPos;
+    private Vector3 targetPos;
+    private bool movingToTarget = true;
+
     void Start()
     {
-        dir = 1;
+        startPos = transform.position;
+        targetPos = startPos + new Vector3(moveDistance, moveHeight, 0);  // Adjust movement direction here
+        StartCoroutine(MoveObject());
     }
 
-    // Update is called once per frame
-    void Update()
+    IEnumerator MoveObject()
     {
-        if (i == 60)
+        while (true)
         {
-            dir = -1;
+            Vector3 destination = movingToTarget ? targetPos : startPos;
+
+            // Move towards the destination
+            while (Vector3.Distance(transform.position, destination) > 0.01f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, destination, speed * Time.deltaTime);
+                yield return null;
+            }
+
+            // Wait at the destination
+            yield return new WaitForSeconds(waitTime);
+
+            // Swap movement direction
+            movingToTarget = !movingToTarget;
         }
-        else if (i == -60)
-        {
-            dir = 1;
-        }
-        moveDirection = new Vector3(0f, 0f, 1f * dir);
-        transform.position += moveDirection * moveSpeed;
-        i += dir;
     }
 }
