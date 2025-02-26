@@ -131,10 +131,11 @@ public class UIManager : MonoBehaviour
     // Carga las preferencias de sonido desde PlayerPrefs y las aplica a los controles de la UI
     public void LoadOptions()
     {
+
         musicSlider.value = PlayerPrefs.GetFloat(AudioManager.Instance.musicSavedValue); // Actualiza el slider de música
         sfxSlider.value = PlayerPrefs.GetFloat(AudioManager.Instance.sfxSavedValue); // Actualiza el slider de efectos de sonido
-        muteBmgChecker.isOn = AudioManager.Instance.isMuteBgm; // Actualiza el toggle de silencio
-        muteSfxChecker.isOn = AudioManager.Instance.isMuteSfx; // Actualiza el toggle de silencio
+        muteBmgChecker.isOn = PlayerPrefs.GetInt(AudioManager.Instance.musicIsMuted) == 1; // Actualiza el toggle de silencio
+        muteSfxChecker.isOn = PlayerPrefs.GetInt(AudioManager.Instance.sfxIsMuted) == 1; // Actualiza el toggle de silencio
         AudioManager.Instance.LoadSoundPreferences(); // Carga los valores guardados en AudioManager
     }
 

@@ -162,11 +162,9 @@ public class AudioManager : MonoBehaviour
         {
             SetMusicVolume(0f);
             PlayerPrefs.SetFloat(musicSavedValue, sliderValue);
-            PlayerPrefs.SetInt(musicIsMuted, 1);
         }
         else
         {
-            PlayerPrefs.SetInt(musicIsMuted, 0);
             SetMusicVolume(PlayerPrefs.GetFloat(musicSavedValue));
         }
         isMuteBgm = !isMuteBgm;
@@ -179,11 +177,9 @@ public class AudioManager : MonoBehaviour
         {
             SetSfxVolume(0f);
             PlayerPrefs.SetFloat(sfxSavedValue, sliderValue);
-            PlayerPrefs.SetInt(sfxIsMuted, 1);
         }
         else
         {
-            PlayerPrefs.SetInt(sfxIsMuted, 0);
             SetMusicVolume(PlayerPrefs.GetFloat(sfxSavedValue));
         }
         isMuteSfx = !isMuteSfx;
@@ -195,13 +191,13 @@ public class AudioManager : MonoBehaviour
         PlayerPrefs.SetFloat(sfxSavedValue, levelSFX);
         PlayerPrefs.SetInt(musicIsMuted, muteMusic ?  1 : 0);
         PlayerPrefs.SetInt(sfxIsMuted, muteSfx ?  1 : 0);
-        Debug.Log(PlayerPrefs.GetInt(musicIsMuted));
     }
 
     public void LoadSoundPreferences()
     {
         if (PlayerPrefs.HasKey(musicSavedValue))
         {
+
             if (PlayerPrefs.GetInt(musicIsMuted) == 1)
             {
                 isMuteBgm = true;
