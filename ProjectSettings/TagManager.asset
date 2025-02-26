@@ -11,6 +11,7 @@ TagManager:
   - Enemy
   - Hud
   - Spawner
+  - HardMode
   layers:
   - Default
   - TransparentFX

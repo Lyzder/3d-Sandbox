@@ -15,6 +15,11 @@ public class BuffSpawn : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (GameManager.Instance.GetDifficulty() == 0)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
         timer = 0;
     }
 

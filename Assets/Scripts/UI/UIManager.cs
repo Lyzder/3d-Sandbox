@@ -17,7 +17,7 @@ public class UIManager : MonoBehaviour
     public Sprite mutedSprite, unmutedSprite;
     public bool isPaused;
 
-    private short screenIndex;
+    private ushort screenIndex;
 
     private void Awake()
     {
@@ -168,6 +168,9 @@ public class UIManager : MonoBehaviour
             case 0:
                 TogglePause();
                 break;
+            case 1:
+                ShowScreen(0);
+                break;
             default:
                 TogglePause();
                 break;
@@ -182,5 +185,6 @@ public class UIManager : MonoBehaviour
     public void ShowScreen(int index)
     {
         transitionAnimator.SetInteger("screenIndex", index);
+        screenIndex = (ushort)index;
     }
 }

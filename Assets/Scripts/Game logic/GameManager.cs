@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+using System;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
@@ -6,8 +6,11 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    public static event Action OnStart;
+
     [SerializeField] bool isPaused, lostFlag, wonFlag;
-    private TargetSpawner targetSpawner;
+    private GameObject hardPlatforms;
+    private ushort difficulty;
     private float timer;
     private Transform spawnPoint;
     
@@ -28,6 +31,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
+        difficulty = 0;
     }
 
     private void OnDestroy()
@@ -63,15 +67,18 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        targetSpawner = FindAnyObjectByType<TargetSpawner>();
         timer = 0;
 
+        if (difficulty == 0)
+        {
+            hardPlatforms.SetActive(false);
+        }
         SpawnPlayer();
         UIManager.Instance.Activate();
-        targetSpawner.canSpanw = true;
         gameStarted = true;
         wonFlag = false;
         lostFlag = false;
+        OnStart?.Invoke();
     }
 
     public void GameOverLose(bool lose)
@@ -88,7 +95,6 @@ public class GameManager : MonoBehaviour
     {
         wonFlag = true;
         Time.timeScale = 0.5F;
-        targetSpawner.canSpanw = false;
         AudioManager.Instance.PlaySFX(winCheer);
     }
 
@@ -106,10 +112,39 @@ public class GameManager : MonoBehaviour
         HudManager.Instance.InitializeHud();
     }
 
+    public void SetDifficulty(ushort difficultyIndex)
+    {
+        difficulty = difficultyIndex;
+    }
+
+    public ushort GetDifficulty()
+    {
+        return difficulty;
+    }
+
+    public void TransitionToScene(ushort sceneIndex)
+    {
+        switch (sceneIndex)
+        {
+            case 0:
+                SceneManager.LoadScene("MainMenu");
+                break;
+            case 1:
+                SceneManager.LoadScene("TestingGrounds");
+                break;
+            default:
+                SceneManager.LoadScene("MainMenu");
+                break;
+        }
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         AudioManager.Instance.PlaySceneBgm();
         if (scene.name == "TestingGrounds")
+        {
+            hardPlatforms = GameObject.FindGameObjectWithTag("HardMode");
             StartGame();
+        }
     }
 }

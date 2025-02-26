@@ -20,8 +20,9 @@ public class UIController : MonoBehaviour
     }
 
     // Método para iniciar la transición al juego
-    public void PlayGameTransition()
+    public void PlayGameTransition(int difficulty)
     {
+        GameManager.Instance.SetDifficulty((ushort)difficulty);
         StartCoroutine(ToGameTransition()); // Inicia la corrutina de transición
     }
 
@@ -30,7 +31,7 @@ public class UIController : MonoBehaviour
     {
         AudioManager.Instance.StopMusic();
         yield return new WaitForSeconds(0.5f); // Espera el tiempo que dura la animación
-        SceneManager.LoadScene("TestingGrounds"); // Comienza el juego
+        GameManager.Instance.TransitionToScene(1); // Comienza el juego
         this.gameObject.SetActive(false); // Desactiva este objeto (probablemente el menú principal)
     }
 

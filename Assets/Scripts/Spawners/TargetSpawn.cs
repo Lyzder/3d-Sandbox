@@ -1,26 +1,28 @@
 using UnityEngine;
 
-public class TargetSpawner : MonoBehaviour
+public class TargetSpawn : MonoBehaviour
 {
     [SerializeField] GameObject obstacle;
     public float time;
     public int randomIndex;
-    public bool canSpanw;
+    public bool canSpawn;
 
     private GameObject[] targets;
     private GameObject[] spawnPoints;
+    private bool hardMode;
 
     private void Awake()
     {
         spawnPoints = GameObject.FindGameObjectsWithTag("Spawner");
         targets = new GameObject[spawnPoints.Length];
+        hardMode = GameManager.Instance.GetDifficulty() > 0;
     }
 
 
     void Update()
     {
         //Condición para poder iniciar el spawneo
-        switch (canSpanw)
+        switch (canSpawn)
         {
             case true:
 
@@ -30,7 +32,7 @@ public class TargetSpawner : MonoBehaviour
                 if (time >= 2f)
                 {
                     //Generamos un número aleatorio entre 0 y la canditad de puntos que hemos hecho
-                    randomIndex = Random.Range(0, spawnPoints.Length);
+                    randomIndex = Random.Range(0, hardMode ? spawnPoints.Length : 6);
                     //Con esta función, aparecemos el objeto en la escena en el punto aleatorio que generamos antes
                     if (targets[randomIndex] == null)
                     {
