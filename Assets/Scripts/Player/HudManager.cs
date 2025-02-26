@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +18,7 @@ public class HudManager : MonoBehaviour
 
     private void Awake()
     {
+        // Create singleton isntance
         if (Instance == null)
         {
             Instance = this;
@@ -30,6 +29,7 @@ public class HudManager : MonoBehaviour
             Destroy(this.gameObject);
         }
 
+        // Prepares the references for functionality
         canvas = gameObject.GetComponentInChildren<Canvas>();
         hud = FindChildWithTag.FindInChildrenBFS(transform, "Hud").GetComponent<RectTransform>();
         ammoBar = hud.GetChild(0);
@@ -56,8 +56,12 @@ public class HudManager : MonoBehaviour
         ShowCrosshair();
     }
 
+    /// <summary>
+    /// Animates the ammo bar according to the Player's ammo
+    /// </summary>
     private void UpdateAmmoBar()
     {
+        // If the Player has an ammo buff, make the bar golden
         if (playerController.GetIsBuff())
         {
             ammoBar.GetComponent<Image>().color = Color.yellow;
@@ -70,6 +74,9 @@ public class HudManager : MonoBehaviour
         currentAmmo.sizeDelta = new Vector2(currentAmmo.sizeDelta.x, playerController.GetAmmo() * maxBarHeight / 100);
     }
 
+    /// <summary>
+    /// Shows the crosshair if the Player is aiming
+    /// </summary>
     private void ShowCrosshair()
     {
         if (playerController.GetAim())
@@ -78,11 +85,20 @@ public class HudManager : MonoBehaviour
             crosshair.GetComponent<Image>().enabled = false;
     }
 
+    /// <summary>
+    /// Initializes the hud
+    /// </summary>
     public void InitializeHud()
     {
         player = GameObject.FindWithTag("Player").transform;
         playerController = player.GetComponent<PlayerController>();
         canvas.enabled = true;
         isActive = true;
+    }
+
+    public void Deactivate()
+    {
+        isActive = false;
+        canvas.enabled = false;
     }
 }

@@ -85,9 +85,15 @@ public class PlayerController : MonoBehaviour
         inputActions.Player.Jump.performed += ctx => Jump();
         inputActions.Player.Aim.performed += ctx => SetAiming(true);
         inputActions.Player.Aim.canceled += ctx => SetAiming(false);
+        inputActions.Player.Pause.performed += ctx => Pause();
+        inputActions.UI.MenuButton.performed += ctx => Pause();
 
         // Camera movement
         inputActions.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
+
+        // UI
+        UIManager.OnPausing += ToggleInputActions;
+        UIManager.OnUnpausing += ToggleInputActions;
     }
 
     private void OnDisable()
@@ -102,14 +108,21 @@ public class PlayerController : MonoBehaviour
         inputActions.Player.Jump.performed -= ctx => Jump();
         inputActions.Player.Aim.performed -= ctx => SetAiming(true);
         inputActions.Player.Aim.canceled -= ctx => SetAiming(false);
+        inputActions.Player.Pause.performed -= ctx => Pause();
+        inputActions.UI.MenuButton.performed -= ctx => Pause();
 
         // Camera movement
         inputActions.Player.Look.performed -= ctx => lookInput = Vector2.zero;
+
+        // UI
+        UIManager.OnPausing -= ToggleInputActions;
+        UIManager.OnUnpausing -= ToggleInputActions;
     }
 
     private void Start()
     {
         cameraController = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraController>();
+        ToggleInputActions();
         buffTimer = 0;
     }
 
@@ -308,6 +321,27 @@ public class PlayerController : MonoBehaviour
         if (!endBuffClipPlayed && ammoBuffDuration - buffTimer <= ammoBuffEndSfx.length) { 
             AudioManager.Instance.PlaySFX(ammoBuffEndSfx);
             endBuffClipPlayed = true;
+        }
+    }
+
+    private void Pause()
+    {
+        UIManager.Instance.HandlePause();
+    }
+
+    private void ToggleInputActions()
+    {
+        if (UIManager.Instance.GetPaused())
+        {
+            Debug.Log("Pausing");
+            inputActions.UI.Enable();
+            inputActions.Player.Disable();
+        }
+        else
+        {
+            Debug.Log("Unpausing");
+            inputActions.UI.Disable();
+            inputActions.Player.Enable();
         }
     }
 

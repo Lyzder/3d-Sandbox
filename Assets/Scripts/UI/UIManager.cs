@@ -1,37 +1,74 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class UIController : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
-    public Animator transitionAnimator; // Referencia al Animator para gestionar transiciones de escena
+    public static UIManager Instance { get; private set; }
+    public static event Action OnPausing;
+    public static event Action OnUnpausing;
 
+    [SerializeField] GameObject pauseMenu;
+    public Animator transitionAnimator; // Referencia al Animator para gestionar transiciones de escena
     public Slider musicSlider, sfxSlider; // Sliders para ajustar el volumen de la música y efectos de sonido
     public Toggle muteBmgChecker, muteSfxChecker; // Toggle para activar/desactivar el silencio
     public Sprite mutedSprite, unmutedSprite;
-    public bool inSettings;
+    public bool isPaused;
 
-    public void Awake()
+    private short screenIndex;
+
+    private void Awake()
     {
-        inSettings = false;
-        Cursor.lockState = CursorLockMode.None; // Unlock cursor if needed
-        Cursor.visible = true;
+        // Create singleton isntance
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+
+        isPaused = false;
+        screenIndex = 0;
+        pauseMenu.SetActive(false);
     }
 
-    // Método para iniciar la transición al juego
-    public void PlayGameTransition()
+    // Start is called before the first frame update
+    void Start()
     {
-        StartCoroutine(ToGameTransition()); // Inicia la corrutina de transición
+        
     }
 
-    // Corrutina que maneja la transición de salida antes de empezar el juego
-    IEnumerator ToGameTransition()
+    // Update is called once per frame
+    void Update()
     {
-        AudioManager.Instance.StopMusic();
-        yield return new WaitForSeconds(0.5f); // Espera el tiempo que dura la animación
-        SceneManager.LoadScene("TestingGrounds"); // Comienza el juego
-        this.gameObject.SetActive(false); // Desactiva este objeto (probablemente el menú principal)
+        
+    }
+
+    private void TogglePause()
+    {
+        isPaused = !isPaused;
+        pauseMenu.SetActive(isPaused);
+
+        if (isPaused)
+        {
+            Time.timeScale = 0f; // Stop game time
+            Cursor.lockState = CursorLockMode.None; // Unlock cursor if needed
+            Cursor.visible = true;
+            LoadOptions();
+            OnPausing?.Invoke();
+        }
+        else
+        {
+            Time.timeScale = 1f; // Resume game time
+            Cursor.lockState = CursorLockMode.Locked; // Lock cursor back (if FPS-style game)
+            Cursor.visible = false;
+            OnUnpausing?.Invoke();
+        }
     }
 
     // Método para cambiar el volumen de la música basado en el valor del slider
@@ -101,9 +138,48 @@ public class UIController : MonoBehaviour
         AudioManager.Instance.LoadSoundPreferences(); // Carga los valores guardados en AudioManager
     }
 
-    public void ShowMenu(int index)
+    // Método para iniciar la transición al juego
+    public void PlayMenuTransition()
     {
-        transitionAnimator.SetInteger("menuIndex", index);
+        StartCoroutine(ToMainMenu()); // Inicia la corrutina de transición
     }
 
+    // Corrutina que maneja la transición de salida antes de empezar el juego
+    IEnumerator ToMainMenu()
+    {
+        AudioManager.Instance.StopMusic();
+        TogglePause();
+        yield return new WaitForSeconds(0.5f); // Espera el tiempo que dura la animación
+        HudManager.Instance.Deactivate();
+        SceneManager.LoadScene("MainMenu"); // Comienza el juego
+        gameObject.SetActive(false); // Desactiva este objeto (probablemente el menú principal)
+    }
+
+    public void Activate()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void HandlePause()
+    {
+        switch (screenIndex)
+        {
+            case 0:
+                TogglePause();
+                break;
+            default:
+                TogglePause();
+                break;
+        }
+    }
+
+    public bool GetPaused()
+    {
+        return isPaused;
+    }
+
+    public void ShowScreen(int index)
+    {
+        transitionAnimator.SetInteger("screenIndex", index);
+    }
 }

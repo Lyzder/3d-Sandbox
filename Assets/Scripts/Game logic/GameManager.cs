@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour
         timer = 0;
 
         SpawnPlayer();
+        UIManager.Instance.Activate();
         targetSpawner.canSpanw = true;
         gameStarted = true;
         wonFlag = false;

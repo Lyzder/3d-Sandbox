@@ -189,34 +189,39 @@ public class AudioManager : MonoBehaviour
         isMuteSfx = !isMuteSfx;
     }
 
-    public void SaveSoundPreferences(float levelMusic, float levelSFX)
+    public void SaveSoundPreferences(float levelMusic, float levelSFX, bool muteMusic, bool muteSfx)
     {
         PlayerPrefs.SetFloat(musicSavedValue, levelMusic);
         PlayerPrefs.SetFloat(sfxSavedValue, levelSFX);
-        if (isMuteBgm)
-            PlayerPrefs.SetInt(musicIsMuted, 1);
-        else
-            PlayerPrefs.SetInt(musicIsMuted, 0);
-        if (isMuteSfx)
-            PlayerPrefs.SetInt(sfxIsMuted, 1);
-        else
-            PlayerPrefs.SetInt(sfxIsMuted, 0);
+        PlayerPrefs.SetInt(musicIsMuted, muteMusic ?  1 : 0);
+        PlayerPrefs.SetInt(sfxIsMuted, muteSfx ?  1 : 0);
+        Debug.Log(PlayerPrefs.GetInt(musicIsMuted));
     }
 
     public void LoadSoundPreferences()
     {
         if (PlayerPrefs.HasKey(musicSavedValue))
         {
-            SetMusicVolume(PlayerPrefs.GetFloat(musicSavedValue));
-            SetSfxVolume(PlayerPrefs.GetFloat(sfxSavedValue));
             if (PlayerPrefs.GetInt(musicIsMuted) == 1)
+            {
                 isMuteBgm = true;
+                SetMusicVolume(0f);
+            }
             else
+            {
                 isMuteBgm = false;
+                SetMusicVolume(PlayerPrefs.GetFloat(musicSavedValue));
+            }
             if (PlayerPrefs.GetInt(sfxIsMuted) == 1)
+            {
                 isMuteSfx = true;
+                SetSfxVolume(0f);
+            }
             else
+            {
                 isMuteSfx = false;
+                SetSfxVolume(PlayerPrefs.GetFloat(sfxSavedValue));
+            }
         }
     }
 
@@ -230,5 +235,10 @@ public class AudioManager : MonoBehaviour
         sampleLoop.ResetPosition();
         sampleLoop.SetPlaying(true);
         audioSource.Play();
+    }
+
+    public bool IsBgmReady()
+    {
+        return musicAudio.clip.loadState == AudioDataLoadState.Loaded;
     }
 }
