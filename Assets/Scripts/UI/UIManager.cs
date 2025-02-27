@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -26,15 +27,26 @@ public class UIManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
+
+            isPaused = false;
+            screenIndex = 0;
+            pauseMenu.SetActive(false);
+
+            GameManager.OnVictory += VictoryTransition;
+            GameManager.OnGameOver += GameOverTransition;
+            GameManager.OnStart += StartUI;
         }
         else
         {
             Destroy(this.gameObject);
         }
+    }
 
-        isPaused = false;
-        screenIndex = 0;
-        pauseMenu.SetActive(false);
+    private void OnDestroy()
+    {
+        GameManager.OnVictory -= VictoryTransition;
+        GameManager.OnGameOver -= GameOverTransition;
+        GameManager.OnStart -= StartUI;
     }
 
     // Start is called before the first frame update
@@ -47,6 +59,16 @@ public class UIManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    private void StartUI()
+    {
+        isPaused = false;
+        pauseMenu.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked; // Lock cursor back (if FPS-style game)
+        Cursor.visible = false;
+        Time.timeScale = 1f;
+        screenIndex = 0;
     }
 
     private void TogglePause()
@@ -139,20 +161,25 @@ public class UIManager : MonoBehaviour
         AudioManager.Instance.LoadSoundPreferences(); // Carga los valores guardados en AudioManager
     }
 
-    // Método para iniciar la transición al juego
+    // Método para iniciar la transición al menu
     public void PlayMenuTransition()
     {
-        StartCoroutine(ToMainMenu()); // Inicia la corrutina de transición
+        StartCoroutine(ToScene(0)); // Inicia la corrutina de transición
+    }
+
+    // Método para iniciar la transición al juego
+    public void PlayGameTransition()
+    {
+        StartCoroutine(ToScene(1)); // Inicia la corrutina de transición
     }
 
     // Corrutina que maneja la transición de salida antes de empezar el juego
-    IEnumerator ToMainMenu()
+    IEnumerator ToScene(ushort index)
     {
         AudioManager.Instance.StopMusic();
-        TogglePause();
-        yield return new WaitForSeconds(0.5f); // Espera el tiempo que dura la animación
+        yield return new WaitForSecondsRealtime(0.5f); // Espera el tiempo que dura la animación
         HudManager.Instance.Deactivate();
-        SceneManager.LoadScene("MainMenu"); // Comienza el juego
+        GameManager.Instance.TransitionToScene(index); // Comienza el juego
         gameObject.SetActive(false); // Desactiva este objeto (probablemente el menú principal)
     }
 
@@ -186,5 +213,25 @@ public class UIManager : MonoBehaviour
     {
         transitionAnimator.SetInteger("screenIndex", index);
         screenIndex = (ushort)index;
+    }
+
+    private void GameOverTransition()
+    {
+        StartCoroutine(GameOver(5));
+    }
+
+    private void VictoryTransition()
+    {
+        StartCoroutine(GameOver(6));
+    }
+
+    IEnumerator GameOver(int index)
+    {
+        Time.timeScale = 0f; // Stop game time
+        transitionAnimator.SetInteger("screenIndex", index);
+        pauseMenu.SetActive(true);
+        yield return new WaitForSecondsRealtime(1.33f);
+        Cursor.lockState = CursorLockMode.None; // Unlock cursor if needed
+        Cursor.visible = true;
     }
 }

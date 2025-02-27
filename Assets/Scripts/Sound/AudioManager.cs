@@ -26,17 +26,17 @@ public class AudioManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
+
+            musicAudio = transform.GetChild(0).GetComponent<AudioSource>();
+            sampleLoop = GetComponentInChildren<SampleAccurateLoop>();
+            sfxAudio = transform.GetChild(1).GetComponent<AudioSource>();
+            isMuteBgm = false;
+            isMuteSfx = false;
         }
         else
         {
             Destroy(this.gameObject);
         }
-
-        musicAudio = transform.GetChild(0).GetComponent<AudioSource>();
-        sampleLoop = GetComponentInChildren<SampleAccurateLoop>();
-        sfxAudio = transform.GetChild(1).GetComponent<AudioSource>();
-        isMuteBgm = false;
-        isMuteSfx = false;
     }
 
     // Start is called before the first frame update

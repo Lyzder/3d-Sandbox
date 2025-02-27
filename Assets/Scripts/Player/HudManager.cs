@@ -23,22 +23,22 @@ public class HudManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
+
+            // Prepares the references for functionality
+            canvas = gameObject.GetComponentInChildren<Canvas>();
+            hud = FindChildWithTag.FindInChildrenBFS(transform, "Hud").GetComponent<RectTransform>();
+            ammoBar = hud.GetChild(0);
+            crosshair = (RectTransform)hud.GetChild(1);
+            if (ammoBar == null)
+                Debug.Log("No bar");
+            currentAmmo = (RectTransform)ammoBar.GetChild(0);
+            maxBarHeight = currentAmmo.sizeDelta.y;
+            isActive = false;
         }
         else
         {
             Destroy(this.gameObject);
         }
-
-        // Prepares the references for functionality
-        canvas = gameObject.GetComponentInChildren<Canvas>();
-        hud = FindChildWithTag.FindInChildrenBFS(transform, "Hud").GetComponent<RectTransform>();
-        ammoBar = hud.GetChild(0);
-        crosshair = (RectTransform)hud.GetChild(1);
-        if (ammoBar == null)
-            Debug.Log("No bar");
-        currentAmmo = (RectTransform)ammoBar.GetChild(0);
-        maxBarHeight = currentAmmo.sizeDelta.y;
-        isActive = false;
     }
 
     // Start is called before the first frame update

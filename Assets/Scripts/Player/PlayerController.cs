@@ -94,6 +94,11 @@ public class PlayerController : MonoBehaviour
         // UI
         UIManager.OnPausing += ToggleInputActions;
         UIManager.OnUnpausing += ToggleInputActions;
+
+        // Game logic
+        GameManager.OnStart += StartPlayer;
+        GameManager.OnGameOver += EndActions;
+        GameManager.OnVictory += EndActions;
     }
 
     private void OnDisable()
@@ -117,6 +122,11 @@ public class PlayerController : MonoBehaviour
         // UI
         UIManager.OnPausing -= ToggleInputActions;
         UIManager.OnUnpausing -= ToggleInputActions;
+
+        // Game logic
+        GameManager.OnStart -= StartPlayer;
+        GameManager.OnGameOver -= EndActions;
+        GameManager.OnVictory -= EndActions;
     }
 
     private void Start()
@@ -207,7 +217,7 @@ public class PlayerController : MonoBehaviour
             {
                 // Smooth rotation towards the camera direction
                 targetRotation = Quaternion.LookRotation(lookDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 20f);
             }
         }
     }
@@ -333,16 +343,30 @@ public class PlayerController : MonoBehaviour
     {
         if (UIManager.Instance.GetPaused())
         {
-            Debug.Log("Pausing");
             inputActions.UI.Enable();
             inputActions.Player.Disable();
         }
         else
         {
-            Debug.Log("Unpausing");
             inputActions.UI.Disable();
             inputActions.Player.Enable();
         }
+    }
+
+    private void StartPlayer()
+    {
+        inputActions.Player.Enable();
+        inputActions.UI.Disable();
+        ammoCharge = 100f;
+        buffTimer = 0;
+        isAmmoBuff = false;
+        isAiming = false;
+    }
+
+    private void EndActions()
+    {
+        inputActions.Player.Disable();
+        inputActions.UI.Enable();
     }
 
     private void OnDrawGizmos()

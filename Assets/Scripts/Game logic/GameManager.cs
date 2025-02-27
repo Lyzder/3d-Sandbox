@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
@@ -6,12 +7,12 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    public static event Action OnStart;
+    public static event Action OnStart, OnGameOver, OnVictory;
 
     [SerializeField] bool isPaused, lostFlag, wonFlag;
     private GameObject hardPlatforms;
+    private GameObject flagPole;
     private ushort difficulty;
-    private float timer;
     private Transform spawnPoint;
     
     public GameObject playerPrefab;
@@ -24,8 +25,10 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(this.gameObject);
+
             SceneManager.sceneLoaded += OnSceneLoaded;
             ScoreManager.OnWinning += WinGame;
+            ScoreManager.OnLosing += LoseGame;
         }
         else
         {
@@ -38,6 +41,7 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to avoid memory leaks
         ScoreManager.OnWinning -= WinGame;
+        ScoreManager.OnLosing -= LoseGame;
     }
 
     // Start is called before the first frame update
@@ -49,29 +53,16 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (wonFlag)
-        {
-            timer += Time.deltaTime;
 
-            if (timer >= 3.0f)
-            {
-                Time.timeScale = 1.0f;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            }
-        }
-        else if (lostFlag)
-        {
-            GameOverLose(true);
-        }
     }
 
     public void StartGame()
     {
-        timer = 0;
 
         if (difficulty == 0)
         {
             hardPlatforms.SetActive(false);
+            flagPole.transform.position = new Vector3(-15, 0, 15);
         }
         SpawnPlayer();
         UIManager.Instance.Activate();
@@ -81,14 +72,10 @@ public class GameManager : MonoBehaviour
         OnStart?.Invoke();
     }
 
-    public void GameOverLose(bool lose)
+    public void LoseGame()
     {
-        if (lose)
-        {
-            lostFlag = true;
-            
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+        lostFlag = true;
+        StartCoroutine(EndGameTransition(false));
     }
 
     private void WinGame()
@@ -96,6 +83,7 @@ public class GameManager : MonoBehaviour
         wonFlag = true;
         Time.timeScale = 0.5F;
         AudioManager.Instance.PlaySFX(winCheer);
+        StartCoroutine(EndGameTransition(true));
     }
 
     public void SpawnPlayer()
@@ -144,7 +132,19 @@ public class GameManager : MonoBehaviour
         if (scene.name == "TestingGrounds")
         {
             hardPlatforms = GameObject.FindGameObjectWithTag("HardMode");
+            flagPole = GameObject.FindGameObjectWithTag("Finish");
             StartGame();
         }
+    }
+
+    IEnumerator EndGameTransition(bool won)
+    {
+        if (won)
+        {
+            yield return new WaitForSecondsRealtime(3f);
+            OnVictory?.Invoke();
+        }
+        else
+            OnGameOver?.Invoke();
     }
 }

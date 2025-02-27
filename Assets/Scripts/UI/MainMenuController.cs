@@ -30,7 +30,7 @@ public class UIController : MonoBehaviour
     IEnumerator ToGameTransition()
     {
         AudioManager.Instance.StopMusic();
-        yield return new WaitForSeconds(0.5f); // Espera el tiempo que dura la animación
+        yield return new WaitForSecondsRealtime(0.5f); // Espera el tiempo que dura la animación
         GameManager.Instance.TransitionToScene(1); // Comienza el juego
         this.gameObject.SetActive(false); // Desactiva este objeto (probablemente el menú principal)
     }
